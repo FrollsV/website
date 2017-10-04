@@ -1,0 +1,9 @@
+{{define "body"}}
+{{- range .Pages }}
+<div>
+<h1>{{.Title}}</h1>
+<pre class="pre">{{.Body}}</pre>
+<a href =/{{.Path}}>Open</a>
+</div>
+{{- end}}
+{{end}}
