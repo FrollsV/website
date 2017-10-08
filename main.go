@@ -141,7 +141,11 @@ var templates = template.Must(template.New("body.html").ParseFiles("tmpl/edit.ht
 func main() {
 	numbPtr := flag.Int("port", 8080, "server port value")
 	flag.Parse()
-	if *numbPtr != 0 {
+	if *numbPtr <= 0{
+		log.Printf("you smart ass... negative TCP port?")
+		return
+	}
+	if *numbPtr > 0 {
 		var port = *numbPtr
 		log.Printf("Starting server on :%d port", port)
 		http.ListenAndServe(fmt.Sprintf(":%d", *numbPtr), GetMux())
