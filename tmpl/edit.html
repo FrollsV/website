@@ -1,4 +1,4 @@
-{{template "header" .}}
+{{define "body"}}
 <h1>Editing {{.Title}} page</h1>
 <form action="/save/{{.Name}}" method="POST">
 <div><textarea name="title" rows="1" cols="80">{{printf "%s" .Title}}</textarea></div>
@@ -6,3 +6,4 @@
 <div><input type="submit" value="Save"></div>
 </form>
 </html>
+{{end}}

@@ -76,7 +76,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		p = append(p, page)
 	}
 	log.Println("P", p)
-	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/body.html", "tmpl/page.html", "tmpl/paragraph.html")
+	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/header.html", "tmpl/body.html", "tmpl/page.html", "tmpl/paragraph.html")
 	if err != nil {
 		panic(err)
 	}
@@ -130,7 +130,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request, filename string) {
 		log.Print(err)
 		return
 	}
-	pageTemplate, err := template.New("page").ParseFiles("tmpl/page.html", "tmpl/paragraph.html")
+	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/header.html", "tmpl/view.html", "tmpl/page.html", "tmpl/paragraph.html")
 	if err != nil {
 		log.Print(err)
 		return
