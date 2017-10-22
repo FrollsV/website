@@ -19,4 +19,5 @@ func LoadArticle(content string) (Page, error) {
 	page := Page{}
 	err := json.Unmarshal([]byte(content), &page)
 	return page, err
+
 }

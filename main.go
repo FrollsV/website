@@ -16,7 +16,7 @@ import (
 )
 
 type ListOfPages struct {
-	Pages []Page
+	Pages []pages.Page
 }
 type Page struct {
 	Name  string
@@ -67,27 +67,34 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var p []Page
+	var p []pages.Page
 	for _, file := range files {
-		page, _ := loadPage(file.Name())
-		p = append(p, *page)
+		page, err := loadPage(file.Name())
+		if err != nil {
+			panic(err)
+		}
+		p = append(p, page)
 	}
-	err = templates.ExecuteTemplate(w, "root.html", ListOfPages{Pages: p})
+	log.Println("P", p)
+	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/body.html", "tmpl/page.html", "tmpl/paragraph.html")
+	if err != nil {
+		panic(err)
+	}
+
+	err = pageTemplate.Execute(w, &ListOfPages{p})
+
 	if err != nil {
 		panic(err)
 	}
 }
 
-func loadPage(path string) (*Page, error) {
+func loadPage(path string) (pages.Page, error) {
 	filename := "data/" + path
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return pages.Page{}, err
 	}
-	title := strings.Trim(strings.SplitAfter(string(body), "\n")[0], "\n")
-	pageBody := strings.SplitAfter(string(body), title+"\n")[1]
-	filePath := strings.Trim(string(path), ".txt")
-	return &Page{Name: path, Path: filePath, Title: title, Body: pageBody}, nil
+	return pages.LoadArticle(string(body))
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request, fullPath string) {
@@ -105,14 +112,9 @@ func saveHandler(w http.ResponseWriter, r *http.Request, fullPath string) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request, fullPath string) {
-	path := strings.SplitAfter(fullPath, "/")[2]
-	p, err := loadPage(path + ".txt")
-	if err != nil {
-		log.Println(err)
-		p = &Page{Name: path}
-	}
-	log.Printf("p: :%s, :%s, :%s", p.Name, p.Body, p.Title)
-	renderTemplate(w, "edit", p)
+
+	//log.Printf("p: :%s, :%s, :%s", p.Name, p.Body, p.Title)
+	//renderTemplate(w, "edit", p)
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request, filename string) {
