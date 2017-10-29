@@ -75,7 +75,6 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		p = append(p, page)
 	}
-	log.Println("P", p)
 	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/header.html", "tmpl/body.html", "tmpl/page.html", "tmpl/paragraph.html")
 	if err != nil {
 		panic(err)
@@ -112,9 +111,20 @@ func saveHandler(w http.ResponseWriter, r *http.Request, fullPath string) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request, fullPath string) {
+	page, err := loadPage(strings.SplitAfter(fullPath, "/")[2] + ".json")
+	if err != nil {
+		panic(err)
+	}
+	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/header.html", "tmpl/edit.html")
+	if err != nil {
+		panic(err)
+	}
 
-	//log.Printf("p: :%s, :%s, :%s", p.Name, p.Body, p.Title)
-	//renderTemplate(w, "edit", p)
+	err = pageTemplate.Execute(w, page)
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request, filename string) {
