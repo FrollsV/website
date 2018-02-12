@@ -1,8 +1,40 @@
-{{template "header" .}}
-<h1>Editing {{.Title}} page</h1>
-<form action="/save/{{.Name}}" method="POST">
-<div><textarea name="title" rows="1" cols="80">{{printf "%s" .Title}}</textarea></div>
-<div><textarea name="body" rows="20" cols="80">{{printf "%s" .Body}}</textarea></div>
-<div><input type="submit" value="Save"></div>
-</form>
-</html>
+{{define "body"}}
+<div id='editor'>
+    <input type="text" v-model="title" ></input></br>
+      <ul>
+        <li v-for="(paragraph, index) in paragraphs">
+          <input type="text" v-model="paragraph.title" /></br>
+          <textarea v-model="paragraph.content"></textarea></br>
+          <input type="url" v-model="paragraph.image" /></br>
+          <img v-bind:src="paragraph.image" ></img>
+          <button v-on:click="removeParagraph(index)">Remove</button>
+        </li>
+      </ul>
+      <button v-on:click="addParagraph">Add</button></br>
+  </div>
+
+  <script>
+  var app = new Vue({
+    el: '#editor',
+    data: {
+      title: {{ .Title }},
+      paragraphs : [
+        {{range .Paragraphs}} {
+        title: {{.Title}},
+        content: {{.Content}},
+        image: {{.Image}}
+      },
+        {{end}}
+      ]
+    },
+    methods: {
+      addParagraph : function(){
+        this.paragraphs.push({ title: "added paragraph", content: "this is a new paragraph", image: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7e/Bill_Skarsgard%27s_pennywise.png/250px-Bill_Skarsgard%27s_pennywise.png" });
+      },
+      removeParagraph: function(index){
+        this.paragraphs.splice(index, 1);
+      }
+    }
+  })
+  </script>
+{{end}}

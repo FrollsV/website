@@ -1,0 +1,16 @@
+{
+  "title": "Hello coffee",
+  "paragraphs": [
+    {
+      "content":"What a nice boat. Don't you want it back?",
+      "image": "https://images.moviepilot.com/image/upload/c_fill,h_470,q_auto:good,w_620/w5vmzajmqceitr7vkrnc.jpg"
+    },
+    {
+      "title": "don't accept stuff from strangers",
+      "content": "You might fall pray of a psychopatic clown trapped in a storm drain!"
+    },
+    {
+      "image": "public/cat.jpg"
+    }
+  ]
+}

@@ -11,10 +11,12 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/frollsv/website/pages"
 )
 
 type ListOfPages struct {
-	Pages []Page
+	Pages []pages.Page
 }
 type Page struct {
 	Name  string
@@ -65,27 +67,33 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var p []Page
+	var p []pages.Page
 	for _, file := range files {
-		page, _ := loadPage(file.Name())
-		p = append(p, *page)
+		page, err := loadPage(file.Name())
+		if err != nil {
+			panic(err)
+		}
+		p = append(p, page)
 	}
-	err = templates.ExecuteTemplate(w, "root.html", ListOfPages{Pages: p})
+	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/header.html", "tmpl/body.html", "tmpl/page.html", "tmpl/paragraph.html")
+	if err != nil {
+		panic(err)
+	}
+
+	err = pageTemplate.Execute(w, &ListOfPages{p})
+
 	if err != nil {
 		panic(err)
 	}
 }
 
-func loadPage(path string) (*Page, error) {
+func loadPage(path string) (pages.Page, error) {
 	filename := "data/" + path
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return pages.Page{}, err
 	}
-	title := strings.Trim(strings.SplitAfter(string(body), "\n")[0], "\n")
-	pageBody := strings.SplitAfter(string(body), title+"\n")[1]
-	filePath := strings.Trim(string(path), ".txt")
-	return &Page{Name: path, Path: filePath, Title: title, Body: pageBody}, nil
+	return pages.LoadArticle(string(body))
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request, fullPath string) {
@@ -103,22 +111,55 @@ func saveHandler(w http.ResponseWriter, r *http.Request, fullPath string) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request, fullPath string) {
-	path := strings.SplitAfter(fullPath, "/")[2]
-	p, err := loadPage(path + ".txt")
+	page, err := loadPage(strings.SplitAfter(fullPath, "/")[2] + ".json")
 	if err != nil {
-		log.Println(err)
-		p = &Page{Name: path}
+		panic(err)
 	}
-	log.Printf("p: :%s, :%s, :%s", p.Name, p.Body, p.Title)
-	renderTemplate(w, "edit", p)
+	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/header.html", "tmpl/edit.html")
+	if err != nil {
+		panic(err)
+	}
+
+	err = pageTemplate.Execute(w, page)
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request, filename string) {
-	p, err := loadPage(filename + ".txt")
+	log.Print("Loading ", filename)
+
+	filename = "data/" + filename + ".json"
+	body, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return
 	}
-	templates.ExecuteTemplate(w, "view.html", p)
+	p, err := pages.LoadArticle(string(body))
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	pageTemplate, err := template.New("root").ParseFiles("tmpl/root.html", "tmpl/header.html", "tmpl/view.html", "tmpl/page.html", "tmpl/paragraph.html")
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	pageTemplate.Execute(w, p)
+	//err = templates.ExecuteTemplate(w, "page.html", p)
+
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	/*
+		p, err := loadPage(filename + ".txt")
+		if err != nil {
+			return
+		}
+		templates.ExecuteTemplate(w, "view.html", p)
+	*/
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
@@ -136,12 +177,17 @@ func GetMux() http.Handler {
 }
 
 var linkRegexp = regexp.MustCompile("\\[([a-zA-Z0-9]+)\\]")
-var templates = template.Must(template.New("body.html").ParseFiles("tmpl/edit.html", "tmpl/view.html", "tmpl/root.html", "tmpl/header.html", "tmpl/body.html"))
+
+var templates = template.Must(template.New("tmpl/page.html").ParseFiles("tmpl/edit.html", "tmpl/page.html", "tmpl/paragraph.html", "tmpl/view.html", "tmpl/root.html", "tmpl/header.html", "tmpl/body.html"))
 
 func main() {
 	numbPtr := flag.Int("port", 8080, "server port value")
 	flag.Parse()
-	if *numbPtr != 0 {
+	if *numbPtr <= 0 {
+		log.Printf("you smart ass... negative TCP port?")
+		return
+	}
+	if *numbPtr > 0 {
 		var port = *numbPtr
 		log.Printf("Starting server on :%d port", port)
 		http.ListenAndServe(fmt.Sprintf(":%d", *numbPtr), GetMux())

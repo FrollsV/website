@@ -1,5 +1,12 @@
-{{define "root.html"}}
-{{template "header" .}}
+{{define "root"}}
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="../public/style.css" />
+  <script src="https://unpkg.com/vue"></script>
+</head>
+<body>
+{{template "header"}}
 {{template "body" .}}
 </body>
 </html>

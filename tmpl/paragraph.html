@@ -1,0 +1,15 @@
+{{define "paragraph"}}
+
+  {{if .Title}}
+  <h2>{{.Title}}</h2>
+  {{end}}
+
+  {{if .Content}}
+  <p>{{.Content}}</p>
+  {{end}}
+
+  {{if .Image}}
+  <img src="{{.Image}}" alt="some alt text" />
+{{end}}
+
+{{end}}
